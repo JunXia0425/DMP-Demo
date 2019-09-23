@@ -36,6 +36,7 @@
         <spark.version>2.2.3</spark.version>
         <kafka.version>1.1.1</kafka.version>
         <scala.compat.version>2.11</scala.compat.version>
+        <hbase.version>1.2.1</hbase.version>
     </properties>
 
     <dependencies>
@@ -79,6 +80,11 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-graphx_2.11</artifactId>
             <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>${hbase.version}</version>
         </dependency>
     </dependencies>
 

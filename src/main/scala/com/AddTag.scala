@@ -1,8 +1,14 @@
 package com
 
 import com.label._
-import com.util.TagUtils
+import com.typesafe.config.{Config, ConfigFactory}
+import com.util.{HbaseUtil, TagUtils}
 import org.apache.commons.lang.StringUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hbase.client.{Connection, Put}
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
@@ -15,7 +21,7 @@ object AddTag {
             sys.exit()
         }
 
-        val Array(inputPath, outPath) = args
+        val Array(inputPath, day) = args
         val sparkSession: SparkSession = SparkSession
             .builder()
             .appName(this.getClass.getName)
@@ -24,6 +30,16 @@ object AddTag {
             .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
             .config("spark.sql.parquet.compression.codec", "snappy")
             .getOrCreate()
+
+        val config: Config = ConfigFactory.load()
+        val tableName: String = config.getString("hbase.tablename")
+
+        val configuration: Configuration = sparkSession.sparkContext.hadoopConfiguration
+
+        val connection: Connection = HbaseUtil.getConnection(configuration)
+        HbaseUtil.createTable(connection, tableName, "tags")
+
+        val jobConf = new JobConf(configuration)
 
         val df: DataFrame = sparkSession.read.parquet(inputPath)
 
@@ -45,9 +61,19 @@ object AddTag {
 
                 val list: List[(String, Int)] = adLocation ++ app ++ area ++ channel ++ device ++ keywords ++ business
                 (userId, list)
-            }).write.text(outPath)
+            }).rdd.reduceByKey((list1, list2) => {
+            (list1 ::: list2)
+                .groupBy(_._1)
+                .mapValues(x => x.foldLeft[Int](0)(_ + _._2))
+                .toList
+        }).map {
+            case (userId, userTags) => {
+                val put = new Put(Bytes.toBytes(userId))
+                put.addImmutable(Bytes.toBytes("tags"), Bytes.toBytes(day), Bytes.toBytes(userTags.mkString(",")))
+                (new ImmutableBytesWritable(),put)
+            }
+        }.saveAsHadoopDataset(jobConf)
 
-
-        sparkSession.stop()
+        sparkSession.close()
     }
 }
