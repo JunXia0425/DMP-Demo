@@ -1,2 +1,12 @@
 !/src
 !pom.xml
+*.class
+/.idea
+/business-tags
+/exam1
+/exam2
+/gp23*
+spark-warehouse
+/tag_test
+/target
+*.iml
