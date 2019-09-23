@@ -10,7 +10,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object BusinessLabel extends Tag {
-    override def tag(row: Row): mutable.HashMap[String, Int] = {
+    override def tag(row: Row): List[(String, Int)] = {
         val long: Double = String2Type.toDouble(row.getAs[String]("long"))
         val lat: Double = String2Type.toDouble(row.getAs[String]("lat"))
         val map = new mutable.HashMap[String, Int]()
@@ -25,7 +25,7 @@ object BusinessLabel extends Tag {
                 map.put(elem, 1)
             }
         }
-        map
+        map.toList
     }
 
     /**

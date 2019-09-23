@@ -18,13 +18,15 @@ object Log2parquet {
         val random = new Random()
         var pos = 40.0
         if (x) {
-            while (pos < 116.20 || pos > 116.52) {
-                pos = random.nextDouble()
-            }
+            pos = Math.random() * (116.52 - 116.20) + 116.52
+            //            while (pos < 116.20 || pos > 116.52) {
+            //                Math.random()
+            //            }
         } else {
-            while (pos < 39.83 || pos > 40) {
-                pos = random.nextDouble()
-            }
+            pos = Math.random() * (40 - 39.83) + 40
+            //            while (pos < 39.83 || pos > 40) {
+            //                pos = random.nextDouble()
+            //            }
         }
         pos.toString
     }

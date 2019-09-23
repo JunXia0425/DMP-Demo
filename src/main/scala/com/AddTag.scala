@@ -7,11 +7,11 @@ import org.apache.commons.lang.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.client.{Connection, Put}
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.collection.mutable
 
 object AddTag {
     def main(args: Array[String]): Unit = {
@@ -40,6 +40,10 @@ object AddTag {
         HbaseUtil.createTable(connection, tableName, "tags")
 
         val jobConf = new JobConf(configuration)
+        // 指定输出类型
+        jobConf.setOutputFormat(classOf[TableOutputFormat])
+        // 指定输出哪张表
+        jobConf.set(TableOutputFormat.OUTPUT_TABLE,tableName)
 
         val df: DataFrame = sparkSession.read.parquet(inputPath)
 
@@ -57,7 +61,7 @@ object AddTag {
                 val device: List[(String, Int)] = DeviceLabel.tag(row)
                 val keywords: List[(String, Int)] = KeyWordLabel.tag(row)
 
-                val business: mutable.HashMap[String, Int] = BusinessLabel.tag(row)
+                val business: List[(String, Int)] = BusinessLabel.tag(row)
 
                 val list: List[(String, Int)] = adLocation ++ app ++ area ++ channel ++ device ++ keywords ++ business
                 (userId, list)
@@ -66,7 +70,9 @@ object AddTag {
                 .groupBy(_._1)
                 .mapValues(x => x.foldLeft[Int](0)(_ + _._2))
                 .toList
-        }).map {
+        })
+//            .saveAsTextFile("gp23_tags")
+            .map {
             case (userId, userTags) => {
                 val put = new Put(Bytes.toBytes(userId))
                 put.addImmutable(Bytes.toBytes("tags"), Bytes.toBytes(day), Bytes.toBytes(userTags.mkString(",")))

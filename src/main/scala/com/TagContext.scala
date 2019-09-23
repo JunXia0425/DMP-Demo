@@ -4,7 +4,6 @@ import com.label.BusinessLabel
 import com.util.TagUtils
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.collection.mutable
 
 /**
   * 上下文标签主类
@@ -30,7 +29,7 @@ object TagContext {
         df.map(row=>{
             val userId = TagUtils.getOneUserId(row)
             //接下来标签 实现
-            val map: mutable.HashMap[String, Int] = BusinessLabel.tag(row)
+            val map: List[(String, Int)] = BusinessLabel.tag(row)
             (userId,map)
         }).write.json(outputPath)
 
