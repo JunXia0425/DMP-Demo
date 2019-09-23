@@ -8,7 +8,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object KeyWordLabel extends Tag {
-    override def tag(row: Row): mutable.HashMap[String, Int] = {
+    override def tag(row: Row): List[(String, Int)] = {
         val keyWords: String = row.getAs[String]("keywords")
 
         var keyWordList: ListBuffer[String] = new ListBuffer[String]
@@ -20,6 +20,6 @@ object KeyWordLabel extends Tag {
         for (elem <- keyWordList) {
             res.put("K" + elem, 1)
         }
-        res
+        res.toList
     }
 }

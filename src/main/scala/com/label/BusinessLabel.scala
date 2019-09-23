@@ -32,7 +32,7 @@ object BusinessLabel extends Tag {
       * 获取商圈信息。先去查询redis，如果redis没有请求api
       *
       * @param long 经度
-      * @param lat 纬度
+      * @param lat  纬度
       */
     def getBusiness(lat: Double, long: Double): String = {
         //GeoHash
@@ -40,7 +40,9 @@ object BusinessLabel extends Tag {
         var business: String = getBusinessFromRedis(geohashStr)
         if (business == null) {
             business = AmapUtil.getBusinessFromAmap(lat, long)
-            setBusinessToRedis(geohashStr, business)
+            if (StringUtils.isNotBlank(business)) {
+                setBusinessToRedis(geohashStr, business)
+            }
         }
         business
     }

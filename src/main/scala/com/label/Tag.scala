@@ -8,7 +8,7 @@ trait Tag {
     /**
       * 为数据打标签
       * @param row
-      * @return hashmap
+      * @return list
       */
-    def tag(row: Row): mutable.HashMap[String, Int]
+    def tag(row: Row): List[(String, Int)]
 }

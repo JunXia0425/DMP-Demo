@@ -5,7 +5,7 @@ import org.apache.spark.sql.Row
 import scala.collection.mutable
 
 object DeviceLabel extends Tag {
-    override def tag(row: Row): mutable.HashMap[String, Int] = {
+    override def tag(row: Row): List[(String, Int)] = {
         val clientOS: Int = row.getAs[Int]("client")
         val ispname: String = row.getAs[String]("ispname")
         val networkmannername: String = row.getAs[String]("networkmannername")
@@ -32,6 +32,6 @@ object DeviceLabel extends Tag {
             case _ => "D00030004"
         }
 
-        mutable.HashMap(os -> 1, network -> 1, isp -> 1)
+        mutable.HashMap(os -> 1, network -> 1, isp -> 1).toList
     }
 }
